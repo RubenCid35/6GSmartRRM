@@ -16,10 +16,10 @@ This project focuses on optimizing spectral efficiency, mitigating interference,
 
 ## Challenge
 
-This project is part of the ITU AI for Good Challenge, which focuses on:
+This project is part of the [Radio Resource Management (RRM) for 6G in-X Subnetworks](https://challenge.aiforgood.itu.int/match/matchitem/97) Challenge from the [ITU AI/ML in 5G Challenge](https://challenge.aiforgood.itu.int/), which focuses on:
 
-    Tackling interference and resource allocation in hyper-dense industrial networks.
-    Developing AI-powered solutions for dynamic and mobile environments.
-    Ensuring high spectral efficiency and reliability in constrained radio frequency environments.
+1. Tackling interference and resource allocation in hyper-dense industrial networks.
+2. Developing AI-powered solutions for dynamic and mobile environments.
+3. Ensuring high spectral efficiency and reliability in constrained radio frequency environments.
 
 The project addresses the limitations of traditional radio resource management (RRM) methods and explores adaptive, scalable, and computationally efficient AI-based solutions for 6G In-Factory scenarios.
