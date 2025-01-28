@@ -36,8 +36,11 @@
     - Use waterfilling algorithm for sub-optimal (in general conditions)
     - Use sequential iterative subband allocation (SISA) for sub-band sub-optimal allocation
     - Use graph coloring algorithm for sub-band assignment (CGC) for sub-band sub-optimal allocation.
+    - [sub-band allocation methods](https://arxiv.org/html/2403.11891v1)
 
 * ¿Change Parameters?
+
+
 
 ## Sources to analyze
 

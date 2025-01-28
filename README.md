@@ -3,9 +3,16 @@
   <img src="./static/logo.png" width="400" />
 </div>
 
-<div align="center">
-    <h1 style="color: #0594a9; font-weight: 700; font-size: 40px"> 6GSmartRRM </h1>
-    <h2 style="color: #0594a9; font-weight: 500; font-size: 28px"> AI-Driven Radio Resource Management for Hyper-Dense 6G Networks </h2>
+<div align="center" style="width: 100%">
+    <span style="color: #0594a9; font-weight: 500; font-size: 28px"> AI-Driven Radio Resource Management for Hyper-Dense 6G Networks </span>
+    <div style="width:100%; align: center; display: flex; gap: 12px;" markdown="1">
+        <a href="https://opensource.org/licenses/MIT" style="margin-left: auto">
+            <img src="https://img.shields.io/badge/license-MIT-blue" alt="LICENSE" />
+        </a>
+        <a href="https://www.python.org/" style="margin-right: auto">
+            <img src="https://img.shields.io/badge/python-3.8-blue" alt="Python Version" />
+        </a>
+    </div>
 </div>
 
 ## Overview
