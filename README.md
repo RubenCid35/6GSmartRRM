@@ -4,13 +4,13 @@
 </div>
 
 <div align="center" style="width: 100%">
-    <span style="color: #0594a9; font-weight: 500; font-size: 28px"> AI-Driven Radio Resource Management for Hyper-Dense 6G Networks </span>
+    <h2 style="color: #0594a9; font-weight: 500; font-size: 28px"> AI-Driven Radio Resource Management for Hyper-Dense 6G Networks </h2>
     <div style="width:100%; align: center; display: flex; gap: 12px;" markdown="1">
         <a href="https://opensource.org/licenses/MIT" style="margin-left: auto">
             <img src="https://img.shields.io/badge/license-MIT-blue" alt="LICENSE" />
         </a>
         <a href="https://www.python.org/" style="margin-right: auto">
-            <img src="https://img.shields.io/badge/python-3.8-blue" alt="Python Version" />
+            <img src="https://img.shields.io/badge/python-3.11-blue" alt="Python Version" />
         </a>
     </div>
 </div>
@@ -30,3 +30,5 @@ This project is part of the [Radio Resource Management (RRM) for 6G in-X Subnetw
 3. Ensuring high spectral efficiency and reliability in constrained radio frequency environments.
 
 The project addresses the limitations of traditional radio resource management (RRM) methods and explores adaptive, scalable, and computationally efficient AI-based solutions for 6G In-Factory scenarios.
+
+https://jobs.six-group.com/job/Madrid-Data-Science-&-AI/1147294301/

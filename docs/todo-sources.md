@@ -34,7 +34,7 @@
     - The channel gains, and UE locations with respect to the BS are randomly distributed in the area to produce the channel vector for each UE. The **PSO algorithm** is used to determine the associated optimally assigned powers, which are calculated and stored in the dataset. [Source](https://disser.spbu.ru/files/2024/disser_en_sun_qiushi.pdf?page=38)
 
     - Use waterfilling algorithm for sub-optimal (in general conditions)
-    - Use sequential iterative subband allocation (SISA) for sub-band sub-optimal allocation
+    - Use sequential iterative subband allocation (SISA) for sub-band sub-optimal allocation [Source](https://ieeexplore.ieee.org/document/10118695)
     - Use graph coloring algorithm for sub-band assignment (CGC) for sub-band sub-optimal allocation.
     - [sub-band allocation methods](https://arxiv.org/html/2403.11891v1)
 

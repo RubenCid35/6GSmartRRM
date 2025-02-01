@@ -1,9 +1,9 @@
 import numpy as np
 import subnetwork_generate
-
+from   sim_config import SimConfig
 
 class init_parameters:
-    def __init__(self,rng):
+    def __init__(self, rng):
         self.num_of_subnetworks = 20                            # 
         self.n_subchannel = 4
         self.deploy_length = 20                                 # the length and breadth of the factory area (m)
@@ -28,7 +28,7 @@ class init_parameters:
         self.correlationDistance = 5
 
 snapshots = 200000
-config = init_parameters(0)
+config = SimConfig(0, '../config.ini')
 
 print('#### Generating subnetwork ####')
 ch_coef, Location = subnetwork_generate.generate_samples(config, snapshots)

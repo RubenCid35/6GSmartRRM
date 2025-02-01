@@ -6,58 +6,6 @@ from ismember import ismember
 from tqdm import tqdm
 
 def create_layout(deploy_param: object) -> np.ndarray:
-    """Creates layout with N random subnetworks. The networks are positioned at 
-    random in the area. 
-
-    Args:
-        deploy_param (object): deployment configuration parameters
-
-    Returns:
-        np.ndarray: 
-    """
-    N = deploy_param.num_of_subnetworks
-
-    # layout bounds
-    bound = deploy_param.deploy_length - 2*deploy_param.subnet_radius
-    
-    # init matrix
-    X = np.zeros([deploy_param.num_of_subnetworks,1],dtype=np.float64)
-    Y = np.zeros([deploy_param.num_of_subnetworks,1],dtype=np.float64)
-    
-    nValid = 0
-    loop_terminate = 1
-    dist_2 = deploy_param.minDistance**2
-
-    while nValid < deploy_param.num_of_subnetworks and loop_terminate < 1e6:
-
-        newX = bound*(deploy_param.rng_value.uniform()-0.5)
-        newY = bound*(deploy_param.rng_value.uniform()-0.5)
-
-        if all(np.greater(((X[0:nValid] - newX)**2 + (Y[0:nValid] - newY)**2),dist_2)):
-            X[nValid] = newX
-            Y[nValid] = newY
-            nValid = nValid+1
-
-        loop_terminate = loop_terminate+1
-    if nValid < deploy_param.num_of_subnetworks:
-        print("Invalid number of subnetworks for deploy size")
-        exit()
-
-    #Location of the access points
-    X = X+deploy_param.deploy_length/2
-    Y = Y+deploy_param.deploy_length/2
-
-    gwLoc = np.concatenate((X, Y), axis=1)
-    dist_rand = deploy_param.rng_value.uniform(low=deploy_param.minD, high=deploy_param.subnet_radius, size=[N,1])
-    angN = deploy_param.rng_value.uniform(low=0, high=2*np.pi, size=[N,1])
-
-    D_XLoc = X + dist_rand*np.cos(angN)
-    D_YLoc = Y + dist_rand*np.sin(angN)
-    dvLoc = np.concatenate((D_XLoc, D_YLoc), axis=1)
-    dist = cdist(gwLoc,dvLoc)
-    return dist, gwLoc
-
-def create_layout(deploy_param: object) -> np.ndarray:
     """
     Creates a layout with N random subnetworks. The networks are positioned 
     randomly within the deployment area, ensuring a minimum distance between subnetworks.

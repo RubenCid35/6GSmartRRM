@@ -174,3 +174,4 @@ cython_debug/
 
 data/!*.py
 data/!*.pdf
+data/simulations
