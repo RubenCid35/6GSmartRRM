@@ -30,5 +30,3 @@ This project is part of the [Radio Resource Management (RRM) for 6G in-X Subnetw
 3. Ensuring high spectral efficiency and reliability in constrained radio frequency environments.
 
 The project addresses the limitations of traditional radio resource management (RRM) methods and explores adaptive, scalable, and computationally efficient AI-based solutions for 6G In-Factory scenarios.
-
-https://jobs.six-group.com/job/Madrid-Data-Science-&-AI/1147294301/

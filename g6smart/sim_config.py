@@ -1,7 +1,7 @@
 import numpy as np
-import subnetwork_generate
+import configparser
 
-class init_parameters:
+class SimConfig:
     def __init__(self, rng):
         self.num_of_subnetworks = 20                              # Number of subnetworks
         self.n_subchannel = 4                                      # Number of sub-bands
@@ -25,7 +25,7 @@ class init_parameters:
         self.mapXPoints = np.linspace(0, self.deploy_length, num=401, endpoint=True)
         self.mapYPoints = np.linspace(0, self.deploy_length, num=401, endpoint=True)
         self.correlationDistance = 5                              # Decorrelation distance (m)
-        self.transmit_power = 10 ** (self.max_power / 10)*1e-3  # max tranmit power in Wats
+        self.transmit_power = 10 ** (self.max_power / 10) * 1e-3  # max tranmit power in Wats
     
     def __repr__(self) -> str:
         def format_value(val) -> str:
@@ -35,17 +35,3 @@ class init_parameters:
         header = f"| {'name':>25s} | {'value':>25s} |\n{'-'*(25+25+7)}\n"
         table = "\n".join([f"| {name:>25s} | {format_value(value)} |" for name, value in self.__dict__.items() if isinstance(value, (float, int, str))])
         return "Simulation Parameters: \n\n" + header + table + f"\n{'-'*(25+25+7)}\n"
-
-    def __str__(self) -> str: return self.__repr__()
-
-snapshots = 200000
-config = init_parameters(0)
-print(config)
-print('#### Generating subnetwork ####')
-ch_coef, Location = subnetwork_generate.generate_samples(config, snapshots)
-
-CSI = np.save('Channel_matrix_gain', ch_coef)
-Loc = np.save('Location_mat', Location)
-
-# ch_coef = np.load('Channel_matrix_gain.npy')
-# Location = np.load('Location_mat.npy')
