@@ -1,6 +1,10 @@
 import numpy as np
 import configparser
 
+def noise_power(ch_bandwidth: float, noise_figure_db: float, no_dbm: float) -> float:
+    thermal_noise = no_dbm + 10 * np.log10(ch_bandwidth)
+     
+
 class SimConfig:
     def __init__(self, rng):
         self.num_of_subnetworks = 20                              # Number of subnetworks
