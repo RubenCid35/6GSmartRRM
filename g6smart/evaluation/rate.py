@@ -41,10 +41,10 @@ def signal_interference_ratio(
 
         # estimate the interference
         masked_power = power * (allocation == k)
-        interference = np.dot(channel_gain[k, :, n], masked_power)
+        interference = np.dot(channel_gain[allocation, np.arange(N), n], masked_power)
         interference = interference - signal # remove self-interference
 
-        sinr[n] = signal / (interference + noise  + 1e-9)
+        sinr[n] = signal / (interference + noise + 1e-9)
     
     # change units
     if return_dbm: return 10 * np.log10(sinr)
@@ -77,6 +77,13 @@ def bit_rate(
 
     Returns:
         np.ndarray: (N, ) array with the bit rate of each subnetwork. The bit rate is measured in Mbps (10^6 bps). 
+
+    Note:
+
+    If the values may appear as invalid, it has been study that 6G networks could perform with great SINR ratios
+    in comparison with other networks. The current setup is short-range. For example, this [publication](https://arxiv.org/abs/2305.18309)
+    display results with great SINR (>20dbm) in short range scenario.
+    
     """
     B  = config.ch_bandwidth
     SINR = signal_interference_ratio(config, channel_gain, allocation, power, False)

@@ -3,9 +3,11 @@
 
 The naming convention for experiments follows the format:
 
-```{task}-{architecture}-{version}-{hyper}```
+```{prototype}-{task}-{architecture}-{version}-{hyper}```
 
 Components:
+
+* **Prototype**: Prototype Name or ID
 
 * **Task**: Specifies the task performed.
     - Possible values:

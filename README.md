@@ -30,3 +30,9 @@ This project is part of the [Radio Resource Management (RRM) for 6G in-X Subnetw
 3. Ensuring high spectral efficiency and reliability in constrained radio frequency environments.
 
 The project addresses the limitations of traditional radio resource management (RRM) methods and explores adaptive, scalable, and computationally efficient AI-based solutions for 6G In-Factory scenarios.
+
+## Research & Findings
+
+The proposed model (in the future) responds to a dynamic that we could not find a suitable solution
+in the literature. After examining a series of publications, we were able to determine possible 
+actionable insights. We have summarize the findings in [bibliography documentation](./docs/baseline-comparison.md)
