@@ -39,27 +39,24 @@ def signal_interference_ratio(
     NE         = torch.tensor(config.noise_power, device = C.device).float()
     # define power settings
     if P is None or isinstance(P, (int, float)):
-        P      = torch.tensor(P or config.transmit_power, device = C.device).float()
-
+        P = torch.full((B, N), P or config.transmit_power, device=C.device).float()
+   
     # Standarize the allocation format to one-hot allocation
     A = __onehot_allocation(A, K, N)
-    
+
     # Ensure power is a tensor of shape (B, N)
-    ids    = torch.arange(N)
-    signal = torch.sum(C[:, :, ids, ids] * A[:, :, :] * P , dim=1)
-    
-    # calculate interference
-    interference = torch.sum(C * A.unsqueeze(-1) * P.unsqueeze(1), dim = 2)
-    interference = torch.sum(A * interference, dim=1) - signal
+    signal = torch.einsum('bknn,bkn,bn->bn', C, A, P)
+    interference = torch.einsum('bknm,bkm,bm->bn', C, A, P) - signal
+    interference = interference + NE + 1e-9
 
     # calculate signal-interference ratio
-    sinr = signal / (interference + NE + 1e-9) # added epsilon for stability
+    sinr = signal / interference # added epsilon for stability
     
     # convert to dbm if required
     if return_dbm: return 10 * torch.log10(sinr)
     else: return sinr
 
-def bit_rate(config: SimConfig, snir: torch.Tensor) -> torch.Tensor:
+def bit_rate(config: SimConfig, sinr: torch.Tensor) -> torch.Tensor:
     """Computes the bit rate for each subnetwork based on the allocated subbands, 
     channel gain, and transmission power.
 
@@ -73,16 +70,16 @@ def bit_rate(config: SimConfig, snir: torch.Tensor) -> torch.Tensor:
     
     Args:
         config (SimConfig): Configuration object with simulation details
-        snir (torch.Tensor): (B, N) tensor with the SINR of each subnetwork. It can be calculated using `signal_interference_ratio` function.
+        sinr (torch.Tensor): (B, N) tensor with the SINR of each subnetwork. It can be calculated using `signal_interference_ratio` function.
 
     Returns:
         torch.Tensor: (B, N) tensor with the bit rate of each subnetwork in bps
     """
-    B, N = snir.size(0), snir.size(1)
-    bandwidth = torch.tensor(config.ch_bandwidth, device = snir.device).float()
-    return bandwidth * torch.log2(1 + snir)
+    B, N = sinr.size(0), sinr.size(1)
+    bandwidth = torch.tensor(config.ch_bandwidth, device = sinr.device).float()
+    return bandwidth * torch.log2(1 + sinr)
 
-def proportional_loss_factordef(
+def proportional_loss_factor(
         config, 
         C: torch.Tensor,
         A: torch.Tensor,
@@ -106,16 +103,17 @@ def proportional_loss_factordef(
 
     # define power settings
     if P is None or isinstance(P, (int, float)):
-        P      = torch.tensor(P or config.transmit_power, device = C.device).float()
+        P = torch.full((B, N), P or config.transmit_power, device=C.device).float()
+   
     A = __onehot_allocation(A, K, N)
 
     # obtain real conditions
-    snir = signal_interference_ratio(config, C, A, P, False)
-    rate = bit_rate(config, snir)
+    sinr = signal_interference_ratio(config, C, A, P, False)
+    rate = bit_rate(config, sinr)
 
     # obtain ideal conditions
     ids   = torch.arange(C.size(2))
-    ideal = torch.sum(A * C[:, :, ids, ids] * P , dim=1) / (NE + 1e-9)
+    ideal = torch.einsum('bknn,bkn,bn->bn', C, A, P) / (NE + 1e-9)
     ideal = bit_rate(config, ideal)
    
     # return plf
