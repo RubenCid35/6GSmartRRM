@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 from g6smart.sim_config import SimConfig
 
-def __onehot_allocation(A: torch.Tensor, K: int, N: int) -> torch.Tensor:
+def onehot_allocation(A: torch.Tensor, K: int, N: int) -> torch.Tensor:
     B = A.size(0)
     if A.dim() == 2 and A.shape[1] == N:  # Hard allocation case (B, N)
         # Convert hard allocation indices to one-hot (B, K, N)
@@ -19,7 +19,7 @@ def signal_interference_ratio(
         config, 
         C: torch.Tensor,
         A: torch.Tensor,
-        P: torch.Tensor | float | None,
+        P: torch.Tensor | float | None = None,
         return_dbm: bool = False
     ) -> torch.Tensor:
     """Computes the signal-to-interference ratio (SINR) using PyTorch, supporting batch processing on GPU.
@@ -32,21 +32,24 @@ def signal_interference_ratio(
     * return_dbm (bool): Whether to return the output in decibels (dBm). Defaults to False.
 
     Returns:
-    * torch.Tensor: (B, N) tensor with the SINR of each subnetwork.
+    * torch.Tensor: (B, K, N) tensor with the SINR of each subnetwork per subband
     """
 
     B, K, N, _ = C.shape
     NE         = torch.tensor(config.noise_power, device = C.device).float()
     # define power settings
     if P is None or isinstance(P, (int, float)):
-        P = torch.full((B, N), P or config.transmit_power, device=C.device).float()
+        P = torch.full((B, K, N), P or config.transmit_power, device=C.device).float()
    
     # Standarize the allocation format to one-hot allocation
-    A = __onehot_allocation(A, K, N)
+    A = onehot_allocation(A, K, N)
+    
+    # signal calculation
+    signal = A * P * torch.diagonal(C, dim1=-2, dim2=-1)
 
-    # Ensure power is a tensor of shape (B, N)
-    signal = torch.einsum('bknn,bkn,bn->bn', C, A, P)
-    interference = torch.einsum('bknm,bkm,bm->bn', C, A, P) - signal
+    # interference calculation
+    interference = torch.sum((A * P).unsqueeze(-1) * C, dim=-2)
+    interference = interference - signal # remove self-interference
     interference = interference + NE + 1e-9
 
     # calculate signal-interference ratio
@@ -56,7 +59,7 @@ def signal_interference_ratio(
     if return_dbm: return 10 * torch.log10(sinr)
     else: return sinr
 
-def bit_rate(config: SimConfig, sinr: torch.Tensor) -> torch.Tensor:
+def bit_rate(config: SimConfig, sinr: torch.Tensor, alloc: torch.Tensor | None = None) -> torch.Tensor:
     """Computes the bit rate for each subnetwork based on the allocated subbands, 
     channel gain, and transmission power.
 
@@ -71,19 +74,27 @@ def bit_rate(config: SimConfig, sinr: torch.Tensor) -> torch.Tensor:
     Args:
         config (SimConfig): Configuration object with simulation details
         sinr (torch.Tensor): (B, N) tensor with the SINR of each subnetwork. It can be calculated using `signal_interference_ratio` function.
-
+        alloc (torch.Tensor): (B, K, N) or (B, N) tensor with the allocation of each subband. It is only required when the `sinr` has dimension (B, K, N)
     Returns:
         torch.Tensor: (B, N) tensor with the bit rate of each subnetwork in bps
     """
-    B, N = sinr.size(0), sinr.size(1)
     bandwidth = torch.tensor(config.ch_bandwidth, device = sinr.device).float()
-    return bandwidth * torch.log2(1 + sinr)
+    if len(sinr.shape) == 3:
+   
+      B, K, N = sinr.size(0), sinr.size(1), sinr.size(2)
+      assert alloc is not None and isinstance(alloc, torch.Tensor), "We required to give the allocation to weight the channels"
+      A = onehot_allocation(alloc, K, N)
+      return bandwidth * torch.sum(A * torch.log2(1 + sinr), dim = 1)
+   
+    else: 
+      # common scenario
+      return bandwidth * torch.log2(1 + sinr)
 
 def proportional_loss_factor(
         config, 
         C: torch.Tensor,
         A: torch.Tensor,
-        P: torch.Tensor | float | None,
+        P: torch.Tensor | float | None = None,
     ) -> torch.Tensor:
     """PLF measures how much a subnetwork's rate deviates from the ideal rate due to interference, bandwidth allocation, 
     and other system constraints. 
@@ -103,18 +114,18 @@ def proportional_loss_factor(
 
     # define power settings
     if P is None or isinstance(P, (int, float)):
-        P = torch.full((B, N), P or config.transmit_power, device=C.device).float()
+        P = torch.full((B, K, N), P or config.transmit_power, device=C.device).float()
    
-    A = __onehot_allocation(A, K, N)
+    A = onehot_allocation(A, K, N)
 
     # obtain real conditions
     sinr = signal_interference_ratio(config, C, A, P, False)
-    rate = bit_rate(config, sinr)
+    rate = bit_rate(config, sinr, A)
 
     # obtain ideal conditions
     ids   = torch.arange(C.size(2))
-    ideal = torch.einsum('bknn,bkn,bn->bn', C, A, P) / (NE + 1e-9)
-    ideal = bit_rate(config, ideal)
+    ideal = A * P * torch.diagonal(C, dim1=-2, dim2=-1) / (NE + 1e-9)
+    ideal = bit_rate(config, ideal, A)
    
     # return plf
     return torch.sum(rate, dim=1) / (torch.sum(ideal, dim=1) + 1e-9)
