@@ -13,7 +13,7 @@
             <img src="https://img.shields.io/badge/python-3.11-blue" alt="Python Version" />
         </a>
         <a href="https://wandb.ai/rubencid001/6GSmartRRM" style="margin-right: auto">
-            <img src="c:\Users\ruben\AppData\Local\Temp\wandb-github-badge-28-gray.svg" alt="Wandb Results" height="20"/>
+            <img src="https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge-28-gray.svg" alt="Wandb Results" height="20"/>
         </a>
     </div>
 </div>
