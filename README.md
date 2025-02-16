@@ -39,3 +39,20 @@ The project addresses the limitations of traditional radio resource management (
 The proposed model (in the future) responds to a dynamic that we could not find a suitable solution
 in the literature. After examining a series of publications, we were able to determine possible 
 actionable insights. We have summarize the findings in [bibliography documentation](./docs/baseline-comparison.md)
+
+## Current Approaches
+### Two-Step Control Problem
+
+The first approach we are considering is the definition of a two-stage control system. The first stage will use a model to estimate
+the optimal allocation while the second will set the power settings to reduce interference and increase the output.
+
+In the following table, you can see the current results (they may not be updated, check the wandb link for updated results) for the first stage models / algoriths with the maximum power allocated (not yet done). 
+
+**Subband Allocation Results:**
+
+| Algorithm / Model                  | Bit Rate (Mbps) | Spectral Efficency | Jain Fairness    | Proportional Factor Loss (%) | 
+| ---------------------------------- | --------------- | ------------------ | ---------------- | ---------------------------- |
+| SISA Algorithm (Baseline)          | 44.04659        | 4.404659           | 0.9330245        |  **94.2641 %**               |
+| Rate Confirming (Min Rate Loss)    | **44.66844**    | **4.466844**       | **0.9417886**    |  88.3355 %                   |
+
+For comparison and procedure, the results were obtained from the mean of 40.000 simulations of the networks. All metrics are itself the mean bit rate and metrics from each simulation between all subnetworks.
