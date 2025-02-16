@@ -51,7 +51,7 @@ In the following table, you can see the current results (they may not be updated
 **Subband Allocation Results:**
 
 | Algorithm / Model                  | Bit Rate (Mbps) | Spectral Efficency | Jain Fairness    | Proportional Factor Loss (%) | 
-| ---------------------------------- | --------------- | ------------------ | ---------------- | ---------------------------- |
+|:----------------------------------:|:---------------:|:------------------:|:----------------:|:----------------------------:|
 | SISA Algorithm (Baseline)          | 44.04659        | 4.404659           | 0.9330245        |  **94.2641 %**               |
 | Rate Confirming (Min Rate Loss)    | **44.66844**    | **4.466844**       | **0.9417886**    |  88.3355 %                   |
 
