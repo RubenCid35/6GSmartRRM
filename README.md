@@ -58,3 +58,19 @@ In the following table, you can see the current results (they may not be updated
 | Rate Confirming <br>(min-loss & GCN)     |                 |                    |                  |                              |
 
 For comparison and procedure, the results were obtained from the mean of 40.000 simulations of the networks. All metrics are itself the mean bit rate and metrics from each simulation between all subnetworks.
+
+
+## Code Structure  
+
+The repository is organized into several key directories and files:  
+
+- **`docs/`** – Contains bibliographic references, comparisons between research papers, and potential ideas. Over time, this directory will be expanded with more information about discoveries and methods.  
+- **`g6smart/`** – A small library that provides evaluation methods (metrics), simulation information, and baseline implementations for both projects.  
+- **`notebooks/`** – Jupyter notebooks for experiments, analyses, and evaluations related to the project.  
+- **`.gitignore`** – Specifies files and directories that should be ignored by Git.  
+- **`config.ini`** – Configuration file for project settings.  
+- **`LICENSE`** – The project's licensing information.  It is MIT License. 
+- **`requirements.in` & `requirements.txt`** – Lists dependencies needed to run the project. we use [pip-tools](https://github.com/jazzband/pip-tools) to track used libraries.  
+
+The `data/simulations` directory is not uploaded to the repository, but it is expected to contain datasets used for experimentation and evaluation. It should contain
+the files `.npy` with the simulation data.
