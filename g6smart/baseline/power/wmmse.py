@@ -3,11 +3,9 @@ from typing import Annotated, Literal
 import numpy as np
 import numpy.typing as npt
 
-from g6smart.sim_config import SimConfig
-
 
 def _subband_iterative_wmmse(
-    C: Annotated[npt.NDArray[np.complex128], Literal["N", "N"]],
+    G: Annotated[npt.NDArray[np.complex128], Literal["N", "N"]],
     max_power: float,
     noise_power: float,
     max_iter: int = 50,
@@ -17,7 +15,7 @@ def _subband_iterative_wmmse(
     Iterative WMMSE algorithm for subband processing.
 
     Args:
-        C: (N, N) complex channel matrix (users → APs)
+        G: (N, N) complex channel matrix (users → APs)
         max_power: maximum transmit power per user
         noise_power: noise variance
         max_iter: maximum number of iterations
@@ -31,59 +29,45 @@ def _subband_iterative_wmmse(
 
 
     """
-    N = C.shape[0]
-    dtype = np.complex128
+    N = G.shape[0]
+    p = np.full(N, max_power / 2)  # Initial power allocation
 
-    # Initialize variables
-    W = np.sqrt(max_power / N) * np.eye(N, dtype=dtype)
-    C_H = C.conj().T  # Precompute Hermitian
-
-    # Numerical stability scaling
-    scale = max(np.max(np.abs(C)), 1e-8)
-    C_scaled = C / scale
-    noise_scaled = noise_power / (scale ** 2)
-
-    # Precompute outer products
-    C_outer = np.einsum('ij,ik->ijk', C_scaled, C_scaled.conj())
-
-    prev_sinr = np.zeros(N)
     for _ in range(max_iter):
-        # MMSE receiver update (vectorized)
-        interference = noise_scaled * np.eye(N)
-        interference += np.einsum('ij,ik,jkl->il', W.conj(), W, C_outer).real
-        u = np.diag(W.conj().T @ C_H) / np.diag(C_H @ interference @ C_scaled)
-
-        # MSE weights with numerical safety
-        CW = C_H @ W
-        signal = np.abs(u * np.diag(CW)) ** 2
-        total = noise_scaled * np.abs(u) ** 2 + np.sum(np.abs(u[:, None] * CW) ** 2, axis=1)
-        w = 1 / (1 - 2 * np.real(signal) + total + 1e-12)
-
-        # Update precoders
-        W = (C_H * u * w).conj().T
-
-        # Normalize to power constraint
-        norms = np.linalg.norm(W, axis=0) + 1e-10
-        W *= np.sqrt(max_power) / norms
+        p_prev = p.copy()
 
         # Compute SINRs
-        CW = C_H @ W
-        signal = np.abs(np.diag(CW)) ** 2
-        interference = noise_scaled + np.sum(np.abs(CW) ** 2, axis=1) - signal
-        sinrs = signal / interference
+        SINR = np.zeros(N)
+        for i in range(N):
+            interference = np.sum([p[j] * G[i, j] for j in range(N) if j != i])
+            SINR[i] = (p[i] * G[i, i]) / (interference + noise_power)
+
+        # MMSE receiver weight
+        w = 1 / (1 + SINR)
+
+        # Utility weight (derivative of log(1 + SINR))
+        u = 1 / (np.log(2) * (1 + SINR))
+
+        # Update power
+        for i in range(N):
+            interference = sum([
+                u[j] * G[j, i] * w[j] for j in range(N) if j != i
+            ])
+            numerator = u[i] * G[i, i]
+            denominator = w[i] * (interference + 1e-9)
+            p[i] = min(max_power, numerator / denominator)
 
         # Check convergence
-        if np.max(np.abs(sinrs - prev_sinr)) < tol:
+        if np.linalg.norm(p - p_prev) < tol:
             break
-        prev_sinr = sinrs.copy()
 
-    return W
+    return p
 
 
 def iterative_wmmse(
     channel_gain: Annotated[npt.NDArray[np.float64], Literal["K", "N", "N"]],
-    allocation: Annotated[npt.NDArray[np.int64], Literal["N"]],
-    config: SimConfig,
+    allocation: Annotated[npt.NDArray[np.integer], Literal["N"]],
+    max_power: float,
+    noise_power: float,
     max_iter: int = 50,
     tol: float = 1e-4,
 ) -> npt.NDArray[np.float64]:
@@ -101,6 +85,7 @@ def iterative_wmmse(
         power_allocation: (N,) array of total power allocated to each user
     """
     # initialization
+    channel_gain = channel_gain.copy()
     K, N, _ = channel_gain.shape
     power = np.zeros(N, dtype = np.float64)
 
@@ -112,11 +97,13 @@ def iterative_wmmse(
 
         # compute the most efficient allocation
         band_gains = channel_gain[k][active_users][:, active_users]
-        w, _ = _subband_iterative_wmmse(
-            band_gains, config.max_power, config.noise_power,
+        w = _subband_iterative_wmmse(
+            band_gains, max_power, noise_power,
             max_iter, tol
-        )
+        )[1]
 
-        power[active_users] += np.sum(np.abs(w) ** 2, axis = 0)
+        # w = np.abs(w) ** 2
+        power[active_users] = w
+        # power[active_users] = np.sum(w, axis = 0)
 
     return power

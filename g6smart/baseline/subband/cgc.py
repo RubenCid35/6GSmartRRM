@@ -1,5 +1,6 @@
-import numpy as np
 import networkx as nx
+import numpy as np
+
 
 def cgc_algoritm(channel_gain: np.ndarray, n_channel: int = 4) -> np.ndarray:
     """
@@ -34,18 +35,21 @@ def cgc_algoritm(channel_gain: np.ndarray, n_channel: int = 4) -> np.ndarray:
 
     # remove edges while
     n_iteration = 0
-    while max(C.values()) > n_channel:
+    n_colors    = 100000000000000000000000000000
+    while n_colors >= n_channel:
         # remove edge with least interference
         edge = np.unravel_index(np.argmin(X), X.shape)
         X[edge] = np.inf
-        GM[edge] = np.inf
+        GM[edge] = 0
 
         # recompute coloring
         G = nx.from_numpy_array(GM)
         C = nx.coloring.greedy_color(G, strategy='largest_first')
+        n_colors = max(C.values())
         n_iteration += 1
 
     # set allocations
     allocation = np.zeros((X.shape[0], ), dtype = int)
-    for n in range(X.shape[0]): allocation[n] = C[n]
+    for n in range(X.shape[0]):
+        allocation[n] = C[n]
     return allocation
