@@ -2,7 +2,7 @@
 # Publication Study
 
 In this document, we compare different publications and their suitability for the problem we want to solve.
-Most publications propose a solution that may be effective but requires modifications to become coherent with 
+Most publications propose a solution that may be effective but requires modifications to become coherent with
 the project aims and constraints.
 
 ## **Sub-Band Assignment and Power Control for IoT Cellular Networks via Deep Learning**
@@ -265,3 +265,8 @@ the project aims and constraints.
         </td>
     </tr>
 </table>
+
+
+Dynamic Frequency Planning for Autonomous Mobile 6G in-X Subnetworks
+Dragonfly approach for resource allocation in industrial wireless networks
+Slice-aware Resource Allocation and Admission Control for Smart Factory Wireless Networks
