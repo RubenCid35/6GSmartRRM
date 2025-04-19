@@ -40,6 +40,8 @@ def signal_interference_ratio(
     # define power settings
     if P is None or isinstance(P, (int, float)):
         P = torch.full((B, K, N), P or config.transmit_power, device=C.device).float()
+    elif isinstance(P, torch.Tensor) and len(P.shape) == 2: # power not expanded
+        P = P.unsqueeze(-1).expand(-1, K, -1)
 
     # Standarize the allocation format to one-hot allocation
     A = onehot_allocation(A, K, N)
@@ -116,6 +118,8 @@ def proportional_loss_factor(
     # define power settings
     if P is None or isinstance(P, (int, float)):
         P = torch.full((B, K, N), P or config.transmit_power, device=C.device).float()
+    elif isinstance(P, torch.Tensor) and len(P.shape) == 2: # power not expanded
+        P = P.unsqueeze(-1).expand(-1, K, -1)
 
     A = onehot_allocation(A, K, N)
 
