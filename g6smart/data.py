@@ -38,43 +38,56 @@ def load_data(simulations_path: str, n_samples: int | None = 110_000) -> npt.NDA
     return cmg
 
 def create_datasets(
-        csi_data: npt.NDArray, split_sizes: Tuple[int, int, int],
+        *csi_datasets: npt.NDArray,
+        split_sizes: Tuple[int, int, int] | None= None,
         batch_size: int = 512, seed: int = 101
     ) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """Splits the data and creates the data loaders for each part.
+    """Creates DataLoaders for multi-target data, using the first dataset as input.
 
     Args:
-        csi_data (npt.NDArray): original simulations data
-        split_sizes (Tuple[int, int, int]): split sizes. It is a tuple with the following mapping: [train_size, valid_size, test_size]
+        *csi_datasets (npt.NDArray): The first dataset is input, others are targets. All must have the same number of samples.
+        split_sizes (Tuple[int, int, int] or None, optional): split sizes. It is a tuple with the following mapping: [train_size, valid_size, test_size]. If it set to None, then the following split will be done 70% / 15% / 15%.
         batch_size (int, optional): batch size for each data loader. Defaults to 512.
         seed (int, optional): random state. It is used for reproducibility. Defaults to 101.
 
     Returns:
         Tuple[DataLoader,DataLoader,DataLoader]: newly generated data loaders. The data loaders are in order: training, validation, testing.
     """
+    num_samples = csi_datasets[0].shape[0]
+    for i, data in enumerate(csi_datasets):
+        assert data.shape[0] == num_samples, (
+            f"Dataset at index {i} has {data.shape[0]} samples, expected {num_samples}."
+        )
 
-    assert len(csi_data.shape) == 4 and csi_data.shape[2] == csi_data.shape[3], (
+    assert len(csi_datasets[0].shape) == 4 and csi_datasets[0].shape[2] == csi_datasets[0].shape[3], (
         "The file does not correspond with simulations CSI data."
     )
+    if split_sizes is None:
+        split_sizes = [
+            int(num_samples * 0.7), int(num_samples * 0.15), int(num_samples * 0.15)
+        ]
 
-    assert sum(split_sizes) == csi_data.shape[0], (
+    assert sum(split_sizes) == num_samples, (
         "The data split must cover the whole dataset."
-        f"Currently the splits cover {sum(split_sizes)}, while data has {csi_data.shape[0]} records."
+        f"Currently the splits cover {sum(split_sizes)}, while data has {num_samples} records."
     )
 
     # split the data
-    whole_data       = torch.tensor(csi_data).float()
     train_idx, valid_idx, tests_idx = random_split(
-        range(len(whole_data)), split_sizes,
+        list(range(num_samples)), split_sizes,
         generator=torch.Generator().manual_seed(seed)
     )
+    torch_datasets = [torch.tensor(data).float() for data in csi_datasets]
+    def create_split_dataset(indices):
+        split_tensors = [tensor[indices] for tensor in torch_datasets]
+        return TensorDataset(*split_tensors)
 
-    # create dataset and loaders
-    train_dataset = TensorDataset(whole_data[train_idx])
-    valid_dataset = TensorDataset(whole_data[valid_idx])
-    tests_dataset = TensorDataset(whole_data[tests_idx])
+    train_dataset = create_split_dataset(train_idx)
+    valid_dataset = create_split_dataset(valid_idx)
+    test_dataset  = create_split_dataset(tests_idx)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
-    tests_loader = DataLoader(tests_dataset, batch_size=batch_size, shuffle=False)
-    return train_loader, valid_loader, tests_loader
+    test_loader  = DataLoader(test_dataset,  batch_size=batch_size, shuffle=False)
+
+    return train_loader, valid_loader, test_loader
