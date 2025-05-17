@@ -2,7 +2,7 @@ import numpy as np
 
 
 class SimConfig:
-    def __init__(self, rng, original: bool = False):
+    def __init__(self, rng, original: bool = True):
         self.num_of_subnetworks = 20                              # Number of subnetworks
         self.n_subchannel = 4                                     # Number of sub-bands
         self.deploy_length = 20                                   # Length and breadth of the factory area (m)

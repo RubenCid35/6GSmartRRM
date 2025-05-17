@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def weighted_interference_matrix(channel_gain: np.ndarray) -> np.ndarray:
     """
     Computes the weighted interference matrix W based on the channel gain matrix.
@@ -17,7 +18,8 @@ def weighted_interference_matrix(channel_gain: np.ndarray) -> np.ndarray:
     W  = np.where(Hd > 0, channel_gain / Hd , 0)
 
     #  remove self-interference
-    for k in range(W.shape[0]): np.fill_diagonal(W[k], 0)
+    for k in range(W.shape[0]):
+        np.fill_diagonal(W[k], 0)
 
     return W
 

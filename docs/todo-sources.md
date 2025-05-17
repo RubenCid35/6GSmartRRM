@@ -3,12 +3,12 @@
 * Compute the channel gain matrix from data
     - Search Info
 * Compute the interference matrix [Usage](https://vbn.aau.dk/ws/portalfiles/portal/415102733/Learning_to_Allocate_Radio_Resources_in_Mobile_6G_in_X_Subnetworks_fv.pdf)
-    - Discover how they are created. 
+    - Discover how they are created.
 
 * Treat problem like a graph coloring
 
 ## Model Architecture
-* DNN 
+* DNN
     - Distributed Channel (Sub-Band) allocation [Source](https://vbn.aau.dk/ws/portalfiles/portal/415102733/Learning_to_Allocate_Radio_Resources_in_Mobile_6G_in_X_Subnetworks_fv.pdf)
 
 * GNN - Graph Neural Network
@@ -18,7 +18,7 @@
     * Resource
         - [Russian Dissertation](https://disser.spbu.ru/files/2024/disser_en_sun_qiushi.pdf)
 
-* Multi-Step Solution -> smaller model 
+* Multi-Step Solution -> smaller model
     1. Determine Allocation
         + use mixed methods -> DNN to generate a good graph representation and coloring algo to optimize with edge removal [source](https://vbn.aau.dk/ws/portalfiles/portal/415102733/Learning_to_Allocate_Radio_Resources_in_Mobile_6G_in_X_Subnetworks_fv.pdf)
     2. Determine Power

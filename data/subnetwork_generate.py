@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.spatial.distance import cdist
 from ismember import ismember
+from scipy.spatial.distance import cdist
 from tqdm import tqdm
+
 
 def create_layout(deploy_param: object) -> np.ndarray:
     """
-    Creates a layout with N random subnetworks. The networks are positioned 
+    Creates a layout with N random subnetworks. The networks are positioned
     randomly within the deployment area, ensuring a minimum distance between subnetworks.
 
     Args:
@@ -118,7 +119,7 @@ def compute_power(deploy_param, dist, Loc, K):
 
 
 def computeShadowing(deploy_param, dist, gwLoc):
-    
+
     Ilocx, idx = ismember(np.round(gwLoc[0, :], decimals=1), np.round(deploy_param.mapXPoints, decimals=1))
     Ilocy, idy = ismember(np.round(gwLoc[1, :], decimals=1), np.round(deploy_param.mapYPoints, decimals=1))
 
@@ -139,7 +140,7 @@ def generate_samples(deploy_param,number_of_snapshots):
     K = deploy_param.n_subchannel
 
     Channel_gain = np.zeros([number_of_snapshots, K, N, N])
-    
+
     PL = np.zeros([number_of_snapshots, N, N])
     dLoc = np.zeros([number_of_snapshots, N, 2])
     for i in tqdm(range(number_of_snapshots)):
