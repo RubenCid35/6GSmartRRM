@@ -16,7 +16,7 @@ def onehot_allocation(A: torch.Tensor, K: int, N: int) -> torch.Tensor:
     return A_one_hot
 
 def signal_interference_ratio(
-        config,
+        config: SimConfig,
         C: torch.Tensor,
         A: torch.Tensor,
         P: torch.Tensor | float | None = None,

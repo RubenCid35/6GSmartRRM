@@ -1,4 +1,5 @@
 import os
+import shutil
 import zipfile
 from typing import Tuple
 
@@ -101,7 +102,7 @@ def download_simulations_data(
         is_colab: bool = False,
         simulations_local_path: str = SIMULATION_DEFAULT_LOCAL,
         simulations_drive_path: str = SIMULATION_DEFAULT_DRIVE
-    ) -> Tuple[str, str]:
+) -> Tuple[str, str]:
     """Special function that serves downloads and unzips the simulations data from google drive or a local zip.
     The google drive usage only works inside the google colab instance and it expects a given file location.
 
@@ -123,10 +124,13 @@ def download_simulations_data(
 
             from google.colab import drive  # type: ignore
 
+            shutil.rmtree("/content/drive/") # remove possible colab artifacts
             drive.mount('/content/drive')
+
             # Move Simulations to avoid cluttering the drive folder
             if len(os.listdir(simulation_path)) == 0:
                 copy_tree(simulations_drive_path, simulation_path)
+
         except Exception as err:
             print(f"failed to mount drive, cause: {err}")
             pass

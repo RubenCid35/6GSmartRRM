@@ -25,30 +25,32 @@ def loss_fullfield_req(config: SimConfig, C: torch.Tensor, A: torch.Tensor, req:
     rate = torch.sum(rate, dim=1)
     return rate
 
-def min_approx(x: torch.Tensor, p: float = 1e2, mu: float = 0.) -> torch.Tensor:
+def min_approx(x: torch.Tensor, p: float = 1e5, mu: float = 0.) -> torch.Tensor:
     """
 
     Differentiable Approximation of Minimum Function. This function approximates
     the value of min(x).
 
+    **Note**:
+    if the parameter `p` is set to negative number, this function will compute the approximate
+    maximum of the batch.
+
     This function was copied and adapted from:
     * https://mathoverflow.net/questions/35191/a-differentiable-approximation-to-the-minimum-function
 
-
     Args:
         x (torch.Tensor): input tensor with dimension B x N
-        p (float, optional): Approximation parameter. Large values of this parameter corresponds with a more precise approximation of the minimum. Defaults to 1e2.
+        p (float, optional): Approximation parameter. Large values of this parameter corresponds with a more precise approximation of the minimum. Defaults to 1e5.
         mu (float, optional): shift for calculations. Defaults to 0.
 
     Returns:
         torch.Tensor: approximate minimum per batch sample (B, )
     """
-    inner = torch.mean(torch.exp(- p * (x - mu)), dim = 1)
-    return mu - (1 / p) * torch.log(inner)
+    return mu - (1 / p) * torch.logsumexp(-p * (x - mu), dim = 1)
 
 def loss_pure_rate(
     config: SimConfig, C: torch.Tensor, A: torch.Tensor, P: torch.Tensor | None = None,
-    mode: str = 'sum', p: int = 1e2
+    mode: str = 'sum', p: int = 1e5
 ) -> torch.Tensor:
     """Raw loss function that returns an aggregation of the raw spectral efficency.
 
@@ -58,21 +60,23 @@ def loss_pure_rate(
         A (torch.Tensor): soft probabilistic subband allocation (BxKxN)
         P (torch.Tensor, optional): power allocation (BxN). If None, then the function uses the maximum transmit power. Defaults to None
         mode (str, optional): rate loss aggregation mode (mean, sum, min, max). The max and min are differentiable approximations that are affected by the parameter `p`. Defaults to sum.
-        p (float, optional): aggregation approximation parameter. Defaults  to 1e2
+        p (float, optional): aggregation approximation parameter. Defaults  to 1e5
     Returns:
         torch.Tensor: vector with the loss function value per batch sample (B, )
     """
     sinr = metrics.signal_interference_ratio(config, C, A, None)
-    rate = torch.sum(torch.log2(1 + sinr), dim = 1)
+    mask = torch.sigmoid(10 * (sinr - 0.01))
+    rate = torch.sum(torch.log2(1 + sinr) * A * mask, dim = 1)
+    rate = rate / torch.sum(A, dim = 1)
 
     if mode == 'mean':
       loss_rate = torch.mean(rate, dim = 1)
     if mode == 'sum':
       loss_rate = torch.sum(rate, dim = 1)
     elif mode == 'min':
-      loss_rate = min_approx(rate, p)
+      loss_rate = min_approx(rate, + p)
     elif mode == 'max':
-      loss_rate = torch.sum(rate, dim = 1)
+      loss_rate = min_approx(rate, - p)
     return - loss_rate
 
 def binarization_error(alloc: torch.Tensor) -> torch.Tensor:
@@ -89,7 +93,7 @@ def binarization_error(alloc: torch.Tensor) -> torch.Tensor:
     return torch.mean(torch.abs(alloc - rounded))
 
 def update_metrics(
-    prev_metrics: dict[str, float], A: torch.Tensor, C: torch.Tensor, P: torch.Tensor,
+    prev_metrics: dict[str, float], A: torch.Tensor, C: torch.Tensor, P: torch.Tensor | None,
     config : SimConfig, req: float
     ) -> dict[str, float]:
     """Update a metric dictionary with the sum of the previous value and the new metrics.

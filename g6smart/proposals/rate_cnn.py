@@ -104,16 +104,17 @@ class RateConfirmAllocCNNModel(nn.Module):
         # add CNN blocks
         layers.append(create_cnn_block(n_bands, 32,  3, 1, 1, dropout, True))
         layers.append(create_cnn_block(32, 64,  3, 0, 1, dropout, True))
+        layers.append(nn.MaxPool2d(2))
         layers.append(create_cnn_block(64, 256, 3, 0, 1, dropout, True))
-        layers.append(nn.AvgPool2d(2))
+        layers.append(nn.MaxPool2d(2))
         layers.append(nn.Flatten())
 
         self.cnn_layer_info = [
             {"type": "conv", "out_channels": 32, "kernel_size": 3, "padding": 1, "stride": 1},
             {"type": "conv", "out_channels": 64, "kernel_size": 3, "padding": 0, "stride": 1},
-            # {"type": "pool", "pool_size": 2},  # AvgPool2d(2)
+            {"type": "pool", "pool_size": 2},  # AvgPool2d(2)
             {"type": "conv", "out_channels": 256, "kernel_size": 3, "padding": 0, "stride": 1},
-            # {"type": "pool", "pool_size": 2},  # AvgPool2d(2)
+            {"type": "pool", "pool_size": 2},  # AvgPool2d(2)
             {"type": "flatten"},
         ]
 
@@ -126,7 +127,6 @@ class RateConfirmAllocCNNModel(nn.Module):
             # linear layers with HE initialization
             layers.append(nn.Linear(dims[i - 1], dims[i]))
             torch.nn.init.kaiming_normal_(layers[-1].weight, nonlinearity='relu')
-
             layers.append(nn.ReLU())
 
             # apply dropout. We have a lot of parameters, it is required
