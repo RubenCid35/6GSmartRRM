@@ -1,5 +1,4 @@
 import os
-import shutil
 import zipfile
 from typing import Tuple
 
@@ -122,13 +121,12 @@ def download_simulations_data(
         try:
             from distutils.dir_util import copy_tree
 
-            from google.colab import drive  # type: ignore
-
-            shutil.rmtree("/content/drive/") # remove possible colab artifacts
-            drive.mount('/content/drive')
-
             # Move Simulations to avoid cluttering the drive folder
-            if len(os.listdir(simulation_path)) == 0:
+            files = os.listdir(simulation_path)
+            if '.ipynb_checkpoints' in files:
+              files.remove(".ipynb_checkpoints")
+
+            if len(files) == 0:
                 copy_tree(simulations_drive_path, simulation_path)
 
         except Exception as err:
