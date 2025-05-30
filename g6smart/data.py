@@ -5,7 +5,7 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 import torch
-from torch.utils.data import DataLoader, TensorDataset, random_split
+from torch.utils.data import Dataset, TensorDataset, random_split
 
 
 def load_data(simulations_path: str, n_samples: int | None = 110_000) -> npt.NDArray | None:
@@ -39,10 +39,10 @@ def load_data(simulations_path: str, n_samples: int | None = 110_000) -> npt.NDA
     return cmg
 
 def create_datasets(
-        *csi_datasets: npt.NDArray,
-        split_sizes: Tuple[int, int, int] | None= None,
-        batch_size: int = 512, seed: int = 101
-    ) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    *csi_datasets: npt.NDArray,
+    split_sizes: Tuple[int, int, int] | None= None,
+    seed: int = 101
+) -> Tuple[Dataset, Dataset, Dataset]:
     """Creates DataLoaders for multi-target data, using the first dataset as input.
 
     Args:
@@ -52,7 +52,7 @@ def create_datasets(
         seed (int, optional): random state. It is used for reproducibility. Defaults to 101.
 
     Returns:
-        Tuple[DataLoader,DataLoader,DataLoader]: newly generated data loaders. The data loaders are in order: training, validation, testing.
+        Tuple[Dataset, Dataset,Dataset]: newly generated data datasets. The datasets are in order: training, validation, testing.
     """
     num_samples = csi_datasets[0].shape[0]
     for i, data in enumerate(csi_datasets):
@@ -87,11 +87,7 @@ def create_datasets(
     valid_dataset = create_split_dataset(valid_idx)
     test_dataset  = create_split_dataset(tests_idx)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
-    test_loader  = DataLoader(test_dataset,  batch_size=batch_size, shuffle=False)
-
-    return train_loader, valid_loader, test_loader
+    return train_dataset, valid_dataset, test_dataset
 
 # default simulations locations
 SIMULATION_DEFAULT_LOCAL: str = './data/'
@@ -124,6 +120,8 @@ def download_simulations_data(
             # Move Simulations to avoid cluttering the drive folder
             files = os.listdir(simulation_path)
             if '.ipynb_checkpoints' in files:
+              # sometimes it may fail, the checkpoints is already created
+              # so it does copy the file
               files.remove(".ipynb_checkpoints")
 
             if len(files) == 0:

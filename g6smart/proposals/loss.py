@@ -50,7 +50,7 @@ def min_approx(x: torch.Tensor, p: float = 1e5, mu: float = 0.) -> torch.Tensor:
 
 def loss_pure_rate(
     config: SimConfig, C: torch.Tensor, A: torch.Tensor, P: torch.Tensor | None = None,
-    mode: str = 'sum', p: int = 1e5
+    mode: str = 'sum', p: int = 1e5, a: float = 0.5
 ) -> torch.Tensor:
     """Raw loss function that returns an aggregation of the raw spectral efficency.
 
@@ -59,8 +59,9 @@ def loss_pure_rate(
         C (torch.Tensor): channel state matrix (B x K x N x N)
         A (torch.Tensor): soft probabilistic subband allocation (BxKxN)
         P (torch.Tensor, optional): power allocation (BxN). If None, then the function uses the maximum transmit power. Defaults to None
-        mode (str, optional): rate loss aggregation mode (mean, sum, min, max). The max and min are differentiable approximations that are affected by the parameter `p`. Defaults to sum.
+        mode (str, optional): rate loss aggregation mode (mean, sum, min, max, hybrid). The max and min are differentiable approximations that are affected by the parameter `p`. Defaults to sum.
         p (float, optional): aggregation approximation parameter. Defaults  to 1e5
+        a (float, optional): ratio between mean and min in the hybrid loss function. It needs to be between 0 and 1. Defaults to 0.5 (equal part)
     Returns:
         torch.Tensor: vector with the loss function value per batch sample (B, )
     """
@@ -70,13 +71,15 @@ def loss_pure_rate(
     rate = rate / torch.sum(A, dim = 1)
 
     if mode == 'mean':
-      loss_rate = torch.mean(rate, dim = 1)
+        loss_rate = torch.mean(rate, dim = 1)
     if mode == 'sum':
-      loss_rate = torch.sum(rate, dim = 1)
+        loss_rate = torch.sum(rate, dim = 1)
     elif mode == 'min':
-      loss_rate = min_approx(rate, + p)
+        loss_rate = min_approx(rate, + p)
     elif mode == 'max':
-      loss_rate = min_approx(rate, - p)
+        loss_rate = min_approx(rate, - p)
+    elif mode == "hybrid":
+        loss_rate = a * min_approx(rate, - p) +  (1 - a) * torch.mean(rate, dim = 1)
     return - loss_rate
 
 def binarization_error(alloc: torch.Tensor) -> torch.Tensor:
@@ -134,3 +137,8 @@ def update_metrics(
     prev_metrics['proportional-loss' ] += plf.mean().item()
     prev_metrics['over-requirement' ] += ecf_req.mean().item()
     return prev_metrics
+
+def loss_interference(C: torch.Tensor, A: torch.Tensor):
+  losses = A.unsqueeze(-1) * 10 * torch.log10(C + 1e-12) * A.unsqueeze(-2)
+  # losses = 10 * torch.log10(losses + 1e-12)
+  return torch.sum(losses.flatten(start_dim = 1), dim = 1)
