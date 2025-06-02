@@ -1,5 +1,8 @@
+import json
+from collections import defaultdict
 from functools import partial
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,7 +11,9 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from g6smart.evaluation.rate_torch import signal_interference_ratio
-from g6smart.proposals.loss import binarization_error, loss_pure_rate
+from g6smart.evaluation.utils import get_cdf
+from g6smart.proposals.loss import (binarization_error, loss_pure_rate,
+                                    update_metrics)
 from g6smart.sim_config import SimConfig
 
 
@@ -118,4 +123,55 @@ def train_model(
         )
 
         scheduler.step()
-        return model
+    return model
+
+def test_model(model: nn.Module, config: SimConfig, tests_loader: DataLoader, device: torch.DeviceObjType):
+    """Test model, generate metrics and generate CDF for the test data.
+
+    Args:
+        model (nn.Module): trained model
+        config (SimConfig): simulation configuration
+        tests_loader (DataLoader): data loader with the test samples
+        device (torch.DeviceObjType): device information
+
+    Returns:
+        _type_: _description_
+    """
+
+
+    model.eval()
+    total_loss = 0.
+    total_bin_error = 0.
+    metrics = defaultdict(lambda : 0)
+
+    rates = []
+    with torch.no_grad():
+      for sample in tqdm(tests_loader, desc = "testing: ", unit=" batch", total = len(tests_loader), leave = False):
+        sample = sample[0].to(device)
+        A = model(sample) # soft output
+        loss = loss_pure_rate(config, sample, A,  'min', p = 1e6).mean()
+
+        total_loss += loss.item()
+        total_bin_error += binarization_error(A)
+        metrics = update_metrics(metrics, A, sample, None, config, 4)
+
+        # get the metrics
+        A    = torch.argmax(A, dim = 1)
+        sinr = signal_interference_ratio(config, sample, A, None)
+        rate = torch.sum(10 * torch.log2(1 + sinr), dim = 1)
+        rates.append(rate.cpu().flatten().numpy())
+
+        del sample, A, loss
+        torch.cuda.empty_cache()
+
+    total_loss = total_loss / len(tests_loader)
+    total_bin_error = total_bin_error / len(tests_loader)
+
+    metrics = { key: val / len(tests_loader) for key, val in metrics.items()}
+
+    print("testing run:")
+    print("testing batches: ", len(tests_loader))
+    print("test test error: ", total_loss)
+    print("test test binarization error: ", total_bin_error)
+    print("bit rate / quality metrics:\n", json.dumps(metrics, indent = 2))
+    return get_cdf(np.hstack(rates))
