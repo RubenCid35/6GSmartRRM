@@ -50,14 +50,15 @@ In the following table, you can see the current results (they may not be updated
 
 **Subband Allocation Results:**
 
-| Algorithm / Model                        | Bit Rate (Mbps) | Spectral Efficency | Jain Fairness    | Proportional Factor Loss (%) |
-|:----------------------------------------:|:---------------:|:------------------:|:----------------:|:----------------------------:|
-| SISA Algorithm (Baseline)                | 44.04659        | 4.404659           | 0.9330245        |  **94.2641 %**               |
-| Rate Confirming <br>(min-loss & FFN)     | 44.66844        | 4.466844           | **0.9417886**    |  88.3355 %                   |
-| Rate Confirming <br>(min-loss & CCN)     | **45.84627**    | **4.584627**       | 0.941231         |  88.5533 %                   |
-| Rate Confirming <br>(min-loss & GCN)     |                 |                    |                  |                              |
+| Algorithm / Model                           | Bit Rate (Mbps) | Spectral Efficency | Jain Fairness    | Proportional Factor Loss (%) |
+|:-------------------------------------------:|:---------------:|:------------------:|:----------------:|:----------------------------:|
+| SISA Algorithm (Baseline)                   | 44.04659        | 4.404659           | 0.9330245        |  **94.2641 %**               |
+| Rate Confirming <br>(min-loss & FFN)        | 44.66844        | 4.466844           | 0.9417886        |  88.3355 %                   |
+| Rate Confirming <br>(min-loss & CCN)        | 45.84627        | 4.584627           | 0.941231         |  88.5533 %                   |
+| Rate Confirming <br>(min-loss & CNN + LSTM) | **47.32548**    | **4.732548**       | **0.949792**     |  88.0931 %                   |
+| Rate Confirming <br>(min-loss & GNN)        | -    | -       | -     |  -                   |
 
-For comparison and procedure, the results were obtained from the mean of 40.000 simulations of the networks. All metrics are itself the mean bit rate and metrics from each simulation between all subnetworks.
+For comparison and procedure, the results were obtained from the mean of 20.000 simulations of the networks. All metrics are itself the mean bit rate and metrics from each simulation between all subnetworks. This repo contains all tests and notebooks with code.
 
 
 ## Code Structure

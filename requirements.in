@@ -3,6 +3,7 @@ numpy
 pandas
 networkx
 torch
+torch_geometric
 tqdm
 matplotlib
 seaborn
