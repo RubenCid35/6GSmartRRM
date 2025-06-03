@@ -60,6 +60,12 @@ In the following table, you can see the current results (they may not be updated
 
 For comparison and procedure, the results were obtained from the mean of 20.000 simulations of the networks. All metrics are itself the mean bit rate and metrics from each simulation between all subnetworks. This repo contains all tests and notebooks with code.
 
+The following visualization compares the distribution of bit-rate results for all AP / subnetworks in the tests datasets based on the allocations
+of the different models. For comparison, the lower the line the better the model performs.
+
+<p align="center">
+    <img src="./static/cdf-models.png" width = "400">
+</p>
 
 ## Code Structure
 
