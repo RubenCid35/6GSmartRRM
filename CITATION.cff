@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "Este repositorio contiene el código del TFM de Rubén Cid. Si lo usas, por favor cítalo correctamente."
+title: "6GSmart: A Deep Learning Approach to Radio Resource Management in X-subnetworks"
+authors:
+  - family-names: "Cid Costa"
+    given-names: "Rubén"
+date-released: 2025-05-25
+version: "1.0"
+url: "https://github.com/RubenCid35/6GSmartRRM"  # Reemplaza esto por tu URL real
+license: "MIT"
+repository-code: "https://github.com/RubenCid35/6GSmartRRM"  # Igual que arriba
+keywords:
+  - 6G
+  - deep learning
+  - subband allocation
+  - radio resource management
+  - RRM
+  - neural networks
+  - wireless communications
