@@ -64,7 +64,7 @@ The following visualization compares the distribution of bit-rate results for al
 of the different models. For comparison, the lower the line the better the model performs.
 
 <p align="center">
-    <img src="./static/cdf-models.png" width = "400">
+    <img src="./static/ecdf-models.png" width = "400">
 </p>
 
 ## Code Structure
